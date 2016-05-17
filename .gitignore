@@ -1,0 +1,16 @@
+.DS_Store
+[Bb]in/
+[Oo]bj/
+*.suo
+*.user
+*.csproj.user
+*.userprefs
+*.wixpdb
+*.wixobj
+# VIM
+*~
+*.swp
+/src/.deploy
+_Resharper*/
+src/packages/**
+src/TestResult.xml
