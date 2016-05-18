@@ -4,11 +4,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace LessIO.Tests
 {
     [TestClass]
-    public class PathExTests
+    public class PathTests
     {
+        const string Win32LongPathPrefix = @"\\?\";
         private void TestGetParentPath(string expected, string testInput)
         {
-            var actual = PathEx.GetParentPath(testInput);
+            var actual = new Path(testInput).Parent.FullName;
             Assert.AreEqual(expected, actual);
         }
 
@@ -29,17 +30,10 @@ namespace LessIO.Tests
         }
 
         [TestMethod]
-        public void GetParentPathValidatesArgs()
-        {
-            AssertEx.Throws(typeof(ArgumentNullException), () => PathEx.GetParentPath(null));
-            AssertEx.Throws(typeof(ArgumentNullException), () => PathEx.GetParentPath(""));
-        }
-
-        [TestMethod]
         public void GetParentPathSupportsLongPathNames()
         {
-            var input = PathEx.LongPathPrefix + @"C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\MsiOutputTemp\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\SourceDir\Windows\winsxs\x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375\once\more\again\what\the\heck\why\not\a\littlebit\longerpathjustforthefunof\it";
-            var expected = PathEx.LongPathPrefix + @"C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\MsiOutputTemp\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\SourceDir\Windows\winsxs\x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375\once\more\again\what\the\heck\why\not\a\littlebit\longerpathjustforthefunof";
+            var input = Win32LongPathPrefix + @"C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\MsiOutputTemp\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\SourceDir\Windows\winsxs\x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375\once\more\again\what\the\heck\why\not\a\littlebit\longerpathjustforthefunof\it";
+            var expected = @"C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\MsiOutputTemp\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\SourceDir\Windows\winsxs\x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375\once\more\again\what\the\heck\why\not\a\littlebit\longerpathjustforthefunof";
             TestGetParentPath(expected, input);
 
             input = @"C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\MsiOutputTemp\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\SourceDir\Windows\winsxs\x86_Microsoft.VC90.CRT_1fc8b3b9a1e18e3b_9.0.21022.8_x-ww_d08d0375\once\more\again\what\the\heck\why\not\a\littlebit\longerpathjustforthefunof\it";
@@ -49,7 +43,7 @@ namespace LessIO.Tests
 
         private void TestGetPathRoot(string expected, string testInput)
         {
-            var actual = PathEx.GetPathRoot(testInput);
+            var actual = new Path(testInput).PathRoot;
             Assert.AreEqual(expected, actual);
         }
 
@@ -96,6 +90,84 @@ namespace LessIO.Tests
             TestGetPathRoot(@"\\ComputerName\SharedFolder", @"\\ComputerName\SharedFolder\subfolder\");
             TestGetPathRoot(@"\\ComputerName\SharedFolder", @"\\ComputerName\SharedFolder\subfolder\another");
             TestGetPathRoot(@"\\ComputerName\SharedFolder", @"\\ComputerName\SharedFolder");
+        }
+
+        [TestMethod]
+        public void EqualSimple()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            Path b = new Path(@"c:\aroot\aparent");
+            TestEquality(a, b, true);
+        }
+
+        [TestMethod]
+        public void EqualDespiteCase()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            Path b = new Path(@"C:\AROOT\APARENT");
+            TestEquality(a, b, true);
+        }
+
+        [TestMethod]
+        public void NotEqualSimple()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            Path b = new Path(@"c:\aroot\bparent");
+            TestEquality(a, b, false);
+        }
+
+        [TestMethod]
+        public void EqualTrailingPath()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            Path b = new Path(@"c:\aroot\aparent\");
+            TestEquality(a, b, true);
+        }
+
+        [TestMethod]
+        public void EqualDespiteWin32Prefix()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            Path b = new Path(Win32LongPathPrefix + @"c:\aroot\aparent");
+            TestEquality(a, b, true);
+        }
+
+        [TestMethod]
+        public void NotEqualWin32Prefix()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            Path b = new Path(Win32LongPathPrefix + @"c:\aroot\bparent");
+            TestEquality(a, b, false);
+        }
+
+        [TestMethod]
+        public void NotEqualToEmpty()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            TestEquality(a, Path.Empty, false);
+        }
+
+        [TestMethod]
+        public void NotEqualToNull()
+        {
+            Path a = new Path(@"c:\aroot\aparent");
+            Assert.AreNotEqual(a, null);
+            Assert.IsFalse(a.Equals(null));
+            Assert.IsFalse(object.Equals(a, null));
+        }
+
+        private void TestEquality(Path a, Path b, bool areEqual)
+        {
+            if (areEqual)
+                Assert.AreEqual(a, b);
+            else
+                Assert.AreNotEqual(a, b);
+
+            Assert.IsTrue(areEqual == (a == b));
+            Assert.IsTrue(areEqual != (a != b));
+            Assert.IsTrue(areEqual == a.Equals(b));
+            Assert.IsTrue(areEqual == b.Equals(a));
+            Assert.IsTrue(areEqual == object.Equals(a, b));
         }
     }
 }

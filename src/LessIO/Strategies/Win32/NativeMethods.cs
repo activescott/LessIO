@@ -60,6 +60,8 @@ namespace LessIO.Strategies.Win32
         [Flags]
         internal enum EFileAccess : uint
         {
+            FILE_READ_ATTRIBUTES = 0x00000080,
+            FILE_WRITE_ATTRIBUTES = 0x00000100,
             GenericRead = 0x80000000,
             GenericWrite = 0x40000000,
             GenericExecute = 0x20000000,
@@ -134,8 +136,27 @@ namespace LessIO.Strategies.Win32
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FindClose(IntPtr hFindFile);
 
+        
+
+
+        /// <summary>
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa365535%28v=vs.85%29.aspx
+        /// </summary>
         [DllImport("kernel32.dll", EntryPoint = "SetFileAttributes", CharSet = CharSet.Auto, SetLastError = true, BestFitMapping = false)]
         internal static extern bool SetFileAttributes(string lpFileName, uint dwFileAttributes);
+
+        /// <summary>
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa364944%28v=vs.85%29.aspx
+        /// </summary>
+        /// <param name="lpFileName"></param>
+        /// <returns></returns>
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        internal static extern uint GetFileAttributes(string lpFileName);
+
+        // Invalid is from C:\Program Files (x86)\Windows Kits\8.1\Include\um\fileapi.h
+        //#define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
+        internal static readonly int INVALID_FILE_ATTRIBUTES = -1;
+
 
         [DllImport("kernel32.dll", EntryPoint = "RemoveDirectory", CharSet = CharSet.Auto, SetLastError = true, BestFitMapping = false)]
         internal static extern bool RemoveDirectory(string lpPathName);
@@ -154,5 +175,30 @@ namespace LessIO.Strategies.Win32
             ECreationDisposition dwCreationDisposition,
             EFileAttributes dwFlagsAndAttributes,
             IntPtr hTemplateFile);
+
+        // This binding only allows setting creation and last write times.
+        // The last access time parameter must be zero; that time is not
+        // modified.
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern bool SetFileTime(
+            IntPtr hFile,
+            ref long lpCreationTime,
+            IntPtr lpLastAccessTime,
+            ref long lpLastWriteTime);
+
+        /// <summary>
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363851%28v=vs.85%29.aspx
+        /// </summary>
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        internal static extern bool CopyFile(string lpExistingFileName, string lpNewFileName, bool bFailIfExists);
+
+
+        internal const uint FORMAT_MESSAGE_FROM_SYSTEM = 0x00001000;
+
+        /// <summary>
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/ms679351%28v=vs.85%29.aspx
+        /// </summary>
+        [DllImport("kernel32.dll")]
+        internal static extern uint FormatMessage(uint dwFlags, IntPtr lpSource, uint dwMessageId, uint dwLanguageId, [Out] System.Text.StringBuilder lpBuffer, uint nSize, IntPtr Arguments);
     }
 }
