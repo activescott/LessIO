@@ -1,15 +1,16 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SysPath = System.IO.Path;
 
 namespace LessIO.Tests
 {
     [TestClass]
-    public class PathTests
+    public class PathTests : TestBase
     {
         const string Win32LongPathPrefix = @"\\?\";
         private void TestGetParentPath(string expected, string testInput)
         {
-            var actual = new Path(testInput).Parent.FullName;
+            var actual = new Path(testInput).Parent.PathString;
             Assert.AreEqual(expected, actual);
         }
 
@@ -92,82 +93,83 @@ namespace LessIO.Tests
             TestGetPathRoot(@"\\ComputerName\SharedFolder", @"\\ComputerName\SharedFolder");
         }
 
+
         [TestMethod]
-        public void EqualSimple()
+        public void FullPath()
         {
-            Path a = new Path(@"c:\aroot\aparent");
-            Path b = new Path(@"c:\aroot\aparent");
-            TestEquality(a, b, true);
+            // Tests from https://msdn.microsoft.com/en-us/library/system.io.path.getfullpath.aspx
+
+            string input, expected;
+            // GetFullPath('mydir') returns 'C:\temp\Demo\mydir'
+            input = @"mydir";
+            expected = WorkingDirectory + SysPath.DirectorySeparatorChar + @"mydir";
+            Assert.AreEqual(expected, new Path(input).FullPathString);
+
+            // GetFullPath('myfile.ext') returns 'C:\temp\Demo\myfile.ext'
+            input = @"myfile.ext";
+            expected = WorkingDirectory + SysPath.DirectorySeparatorChar + @"myfile.ext";
+            Assert.AreEqual(expected, new Path(input).FullPathString);
+
+            // GetFullPath('\mydir') returns 'C:\mydir'
+            input = @"\mydir";
+            expected = SysPath.GetPathRoot(WorkingDirectory) + @"mydir";
+            Assert.AreEqual(expected, new Path(input).FullPathString);
+
+            input = @"/mydir";
+            expected = SysPath.GetPathRoot(WorkingDirectory) + @"mydir";
+            Assert.AreEqual(expected, new Path(input).FullPathString);
+
+            input = @"c:\mydir";
+            expected = @"c:\mydir";
+            Assert.AreEqual(expected, new Path(input).FullPathString);
+
+            input = @"m:\mydir";
+            expected = @"m:\mydir";
+            Assert.AreEqual(expected, new Path(input).FullPathString);
+        }
+
+        private static string WorkingDirectory
+        {
+            get { return System.IO.Directory.GetCurrentDirectory(); }
         }
 
         [TestMethod]
-        public void EqualDespiteCase()
+        public void IsPathRooted()
         {
-            Path a = new Path(@"c:\aroot\aparent");
-            Path b = new Path(@"C:\AROOT\APARENT");
-            TestEquality(a, b, true);
+            /* 
+             * For example, it returns true for path strings such as "\\MyDir\\MyFile.txt", "C:\\MyDir", or "C:MyDir". It returns false for path strings such as "MyDir".
+             * - https://msdn.microsoft.com/en-us/library/system.io.path.ispathrooted%28v=vs.110%29.aspx
+             */
+
+            string input;
+            //it returns true for path strings such as "\\MyDir\\MyFile.txt", "C:\\MyDir", or "C:MyDir". 
+            input = @"\MyDir\MyFile.txt";
+            Assert.IsTrue(new Path(input).IsPathRooted);
+
+            input = @"C:\MyDir";
+            Assert.IsTrue(new Path(input).IsPathRooted);
+
+            input = @"C:MyDir";
+            Assert.IsTrue(new Path(input).IsPathRooted);
+            
+            //It returns false for path strings such as "MyDir".
+            input = @"MyDir";
+            Assert.IsFalse(new Path(input).IsPathRooted);
         }
 
         [TestMethod]
-        public void NotEqualSimple()
+        public void PathNormalizesDoubleSeperators()
         {
-            Path a = new Path(@"c:\aroot\aparent");
-            Path b = new Path(@"c:\aroot\bparent");
-            TestEquality(a, b, false);
+            //At least with Win32 I found that Double seperators in paths like c:\dir\\file.ext will fail to work (Win32 will not find an existing file due to the double seperator). Specifically I had the path 'C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\TestFiles\\MsiInput\\NUnit-2.5.2.9222.msi' where the file existed but failed to get a valid handle ot it due to the double slash.
+            var p = new Path(@"c:\dir\\file.ext");
+            Assert.AreEqual(@"c:\dir\file.ext", p.PathString);
         }
 
         [TestMethod]
-        public void EqualTrailingPath()
+        public void PathWithDoubleSeperatorShouldStillWorkInFileSystem()
         {
-            Path a = new Path(@"c:\aroot\aparent");
-            Path b = new Path(@"c:\aroot\aparent\");
-            TestEquality(a, b, true);
-        }
-
-        [TestMethod]
-        public void EqualDespiteWin32Prefix()
-        {
-            Path a = new Path(@"c:\aroot\aparent");
-            Path b = new Path(Win32LongPathPrefix + @"c:\aroot\aparent");
-            TestEquality(a, b, true);
-        }
-
-        [TestMethod]
-        public void NotEqualWin32Prefix()
-        {
-            Path a = new Path(@"c:\aroot\aparent");
-            Path b = new Path(Win32LongPathPrefix + @"c:\aroot\bparent");
-            TestEquality(a, b, false);
-        }
-
-        [TestMethod]
-        public void NotEqualToEmpty()
-        {
-            Path a = new Path(@"c:\aroot\aparent");
-            TestEquality(a, Path.Empty, false);
-        }
-
-        [TestMethod]
-        public void NotEqualToNull()
-        {
-            Path a = new Path(@"c:\aroot\aparent");
-            Assert.AreNotEqual(a, null);
-            Assert.IsFalse(a.Equals(null));
-            Assert.IsFalse(object.Equals(a, null));
-        }
-
-        private void TestEquality(Path a, Path b, bool areEqual)
-        {
-            if (areEqual)
-                Assert.AreEqual(a, b);
-            else
-                Assert.AreNotEqual(a, b);
-
-            Assert.IsTrue(areEqual == (a == b));
-            Assert.IsTrue(areEqual != (a != b));
-            Assert.IsTrue(areEqual == a.Equals(b));
-            Assert.IsTrue(areEqual == b.Equals(a));
-            Assert.IsTrue(areEqual == object.Equals(a, b));
+            LessIO.Path p = GetTestPath(@"oneLevel\\test.txt");
+            Assert.IsTrue(FileSystem.Exists(p), "Path with duplicate seperator should still be found");
         }
     }
 }

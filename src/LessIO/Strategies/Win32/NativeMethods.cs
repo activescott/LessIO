@@ -117,8 +117,7 @@ namespace LessIO.Strategies.Win32
         }
 
         /// <summary>
-        /// You should probably be using <see cref="PathEx.CreateDirectory(string)"/>.
-        /// If not, see https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855%28v=vs.85%29.aspx
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855%28v=vs.85%29.aspx
         /// </summary>
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true, BestFitMapping = false)]
         internal static extern bool CreateDirectory(string path, SECURITY_ATTRIBUTES lpSecurityAttributes);

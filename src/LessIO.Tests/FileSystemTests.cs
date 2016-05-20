@@ -120,5 +120,24 @@ namespace LessIO.Tests
             };
             CollectionAssert.AreEquivalent(expected, actual);
         }
+
+        [TestMethod]
+        public void ListContentsFiveLevels()
+        {
+            Path p = GetTestPath(@"fiveLevels");
+            var actual = FileSystem.ListContents(p, true).ToArray();
+            var expected = new Path[]
+            {
+                GetTestPath(@"fiveLevels\one"),
+                GetTestPath(@"fiveLevels\one\two"),
+                GetTestPath(@"fiveLevels\one\two\three"),
+                GetTestPath(@"fiveLevels\one\two\three\four"),
+                GetTestPath(@"fiveLevels\one\two\three\four\5.1"),
+                GetTestPath(@"fiveLevels\one\two\three\four\5.2"),
+                GetTestPath(@"fiveLevels\one\two\three\four\5.1\test1.txt"),
+                GetTestPath(@"fiveLevels\one\two\three\four\5.2\test2.txt"),
+            };
+            CollectionAssert.AreEquivalent(expected, actual);
+        }
     }
 }

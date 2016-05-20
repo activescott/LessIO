@@ -42,7 +42,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Strategies\FileSystemStrategy.cs" />
     <Compile Include="Strategies\Win32\NativeMethods.cs" />
-    <Compile Include="Strategies\Win32\PathEx.FileNode.cs" />
     <Compile Include="Strategies\Win32\Win32FileSystemStrategy.cs" />
   </ItemGroup>
   <ItemGroup>

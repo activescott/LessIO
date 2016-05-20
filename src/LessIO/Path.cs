@@ -17,8 +17,38 @@ namespace LessIO
 
         public Path(string path)
         {
+            //TODO: Consider doing a FileSystem.Normalize and FileSystem.Validate to allow the strategy to Normalize & Validate path
             //To maintain sanity NEVER let the Path object store the long path prefixes. That is a hack for Win32 that should only ever be used just before calling the Win32 API and stripped out of any paths coming out of the Win32 API.
-            _path = StripWin32PathPrefix(path);
+            path = StripWin32PathPrefix(path);
+            path = StripDirectorySeperatorPostfix(path);
+            path = RemoveDoubleSeperators(path);
+            _path = path;
+        }
+
+        private static string RemoveDoubleSeperators(string path)
+        {
+            /* 
+                "\\" is legit for UNC paths and as a prefix.
+                So don't remove "\\" if it is in the root.
+            */
+            string root = GetPathRoot(path);
+            string remainder = path.Length > root.Length ? path.Substring(root.Length) : "";
+
+            Array.ForEach(DirectorySeperatorChars, sep => remainder = remainder.Replace(new string(new char[] { sep, sep }), new string(new char[] { sep })));
+            return root + remainder;
+        }
+
+        private static string StripDirectorySeperatorPostfix(string path)
+        {
+            /* Here we want to trim any trailing directory seperator charactars EXCEPT
+               in one case: When the path is a fully qualified root dir such as "x:\". See GetPathRoot and System.IO.Path.GetPathRoot
+            */
+
+            // "X:/"(path specified an absolute path on a given drive).
+            if (path.Length == 3 && path[1] == ':' && IsDirectorySeparator(path[2]))
+                return path;
+            else
+                return path.TrimEnd(DirectorySeperatorChars);
         }
 
         private static string StripWin32PathPrefix(string pathString)
@@ -47,11 +77,62 @@ namespace LessIO
         }
 
         /// <summary>
-        /// Gets the full path of the directory or file.
+        /// Gets the normalized path string. May be rooted or may be relative.
+        /// For a rooted/qualified path use <see cref="FullPathString"/>
         /// </summary>
-        public string FullName
+        public string PathString
         {
-            get { return _path != null ? _path : _pathEmpty; }
+            get
+            {
+                return _path != null ? _path : _pathEmpty;
+            }
+        }
+
+        /// <summary>
+        /// Returns the absolute path for the current path.
+        /// Compatible with <see cref="System.IO.Path.GetFullPath(string)"/>.
+        /// </summary>
+        public Path FullPath
+        {
+            get
+            {
+                return new Path(this.FullPathString);
+            }
+        }
+
+        /// <summary>
+        /// Returns the absolute path for the current path.
+        /// Compatible with <see cref="System.IO.Path.GetFullPath(string)"/>.
+        /// </summary>
+        public string FullPathString
+        {
+            get
+            {
+                var pathString = this.PathString;
+                var pathRoot = this.PathRoot;
+                if (pathRoot == "")
+                {   // relative
+                    return Combine(WorkingDirectory, pathString).PathString;
+                }
+                else if (pathRoot == @"\" || pathRoot == @"/")
+                {   // use the working directory's drive/root only.
+                    pathString = pathString.TrimStart(DirectorySeperatorChars);//otherwise Combine will ignore the root
+                    string workingRoot = new Path(WorkingDirectory).PathRoot;
+                    return Combine(workingRoot, pathString).PathString;
+                }
+                else
+                {
+                    return pathString;
+                }
+            }
+        }
+
+        private static string WorkingDirectory
+        {
+            get {
+                //TODO: There is a Win32 native equivelent for this:
+                return System.IO.Directory.GetCurrentDirectory();
+            }
         }
 
         public bool IsEmpty
@@ -103,12 +184,12 @@ namespace LessIO
 
         public bool Equals(Path other)
         {
-            return Path.PathEquals(this.FullName, other.FullName);
+            return Path.PathEquals(this.PathString, other.PathString);
         }
 
         internal static bool Equals(Path a, Path b)
         {
-            return PathEquals(a.FullName, b.FullName);
+            return PathEquals(a.PathString, b.PathString);
         }
 
         
@@ -146,20 +227,20 @@ namespace LessIO
         {
             const string Win32LongPathPrefix = @"\\?\";
             //TODO: Needs to look for/support UNC path prefix too!
-            if (!FullName.StartsWith(Win32LongPathPrefix)) // More consistent to deal with if we just add it to all of them: if (!path.StartsWith(LongPathPrefix) && path.Length >= MAX_PATH)
-                return Win32LongPathPrefix + this.FullName;
+            if (!PathString.StartsWith(Win32LongPathPrefix)) // More consistent to deal with if we just add it to all of them: if (!path.StartsWith(LongPathPrefix) && path.Length >= MAX_PATH)
+                return Win32LongPathPrefix + this.PathString;
             else
-                return this.FullName;
+                return this.PathString;
         }
 
         public override int GetHashCode()
         {
-            return FullName.GetHashCode();
+            return PathString.GetHashCode();
         }
 
         public override string ToString()
         {
-            return FullName.ToString();
+            return PathString.ToString();
         }
 
         /// <summary>
@@ -169,7 +250,7 @@ namespace LessIO
         {
             get
             {
-                return GetPathRoot(this.FullName);
+                return GetPathRoot(this.PathString);
             }
         }
 
@@ -228,7 +309,7 @@ namespace LessIO
                 throw new ArgumentNullException("pathParts");
 
             string[] allStrings = new string[pathParts.Length + 1];
-            allStrings[0] = path1.FullName;
+            allStrings[0] = path1.PathString;
             Array.Copy(pathParts, 0, allStrings, 1, pathParts.Length);
             return Combine(allStrings);
         }
@@ -259,7 +340,7 @@ namespace LessIO
         {
             get
             {
-                var path = this.FullName;
+                var path = this.PathString;
                 path = path.TrimEnd(Path.DirectorySeperatorChars);
                 var parentEnd = path.LastIndexOfAny(Path.DirectorySeperatorChars);
                 if (parentEnd >= 0 && parentEnd > GetPathRoot(path).Length)
@@ -279,6 +360,28 @@ namespace LessIO
         {
             get { return FileSystem.Exists(this); }
         }
+
+        /// <summary>
+        /// True if the path is a rooted/fully qualified path. Otherwise returns false if it is a relative path.
+        /// Compatible with <see cref="System.IO.Path.IsPathRooted(string)"/>.
+        /// </summary>
+        public bool IsPathRooted
+        {
+            get
+            {
+                /* The IsPathRooted method returns true if the first character is a directory separator character such as "\", or if the path starts with a drive letter and colon (:). 
+                 * For example, it returns true for path strings such as "\\MyDir\\MyFile.txt", "C:\\MyDir", or "C: MyDir". It returns false for path strings such as "MyDir".
+                 * - https://msdn.microsoft.com/en-us/library/system.io.path.ispathrooted%28v=vs.110%29.aspx
+                 */
+                var pathString = this.PathString;
+                bool rooted = 
+                    DirectorySeperatorChars.Any(c => c == pathString[0])
+                    || pathString.Length >= 2 && pathString[1] == ':';
+                return rooted;
+            }
+        }
+
+
 
         /// <summary>
         /// For code compatibility with <see cref="System.IO.FileSystemInfo.Delete()"/>

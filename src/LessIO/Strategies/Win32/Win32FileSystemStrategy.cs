@@ -94,12 +94,14 @@ namespace LessIO.Strategies.Win32
             {
                 if (Path.IsDirectorySeparator(pathString[i]) || i == pathString.Length - 1)
                 {
-                    var currentPath = pathString.Substring(0, i + 1);
-                    currentPath = currentPath.TrimEnd(Path.DirectorySeperatorChars);// Win32 won't deal with trailing seperators
-                    var pathExists = Exists(new Path(currentPath));
-                    if (!pathExists)
-                        pathExists = NativeMethods.CreateDirectory(currentPath, null);
-                    Debug.Assert(pathExists, "path should always exists at this point!");
+                    Path currentPath = new Path(pathString.Substring(0, i + 1));
+                    if (!Exists(currentPath))
+                    {
+                        bool succeeded = NativeMethods.CreateDirectory(currentPath.WithWin32LongPathPrefix(), null);
+                        if (!succeeded)
+                            throw CreateWin32LastErrorException("Error creating directory '{0}'.", currentPath);
+                    }
+                    Debug.Assert(Exists(currentPath), "path should always exists at this point!");
                 }
                 i++;
             }
@@ -138,37 +140,23 @@ namespace LessIO.Strategies.Win32
         private void RemoveDirectoryRecursively(Path dirName)
         {
             var list = ListContents(dirName, true).ToArray();
-            /****** Summary ******
-             * First build out a tree of the files in the same hierarchy as you'd expect on the filesystem.
-             * Then use the tree to delete all the descendents first (as Win32 requires us to delete all children before deleting a directory).
-            ******/
-            var rootNode = new FileNode(dirName);
-            foreach (var pathName in list)
-            {
-                // build out a stack of paths such that all ancestors of the current node will be added before the current node:
-                var ancestorPaths = new Stack<Path>();
-                // first add the current node since he'll be last off the stack this way.
-                ancestorPaths.Push(pathName);
-                Predicate<Path> IsRoot = (Path p) => rootNode.Path.Equals(p);
-                for (var parentPath = pathName.Parent; !IsRoot(parentPath); parentPath = parentPath.Parent)
-                {
-                    ancestorPaths.Push(parentPath);
+            /* 
+                We need to delete leaf nodes in the file hierarchy first to make sure all directories are empty.
+                We identify leaf nodes by their depth (greatest number of path parts)
+            */
+            Func<Path,int> pathPartCount = (Path p) => p.PathString.Split(Path.DirectorySeperatorChars).Length;
+            Array.Sort<Path>(list, (a,b) => pathPartCount(b) - pathPartCount(a));
+            Array.ForEach(list
+                , p => {
+                    if (FileSystem.IsDirectory(p))
+                        FileSystem.RemoveDirectory(p);
+                    else
+                        FileSystem.RemoveFile(p, true);
+                    Debug.Assert(FileSystem.Exists(p) == false, string.Format("Files/directory still exits:'{0}'", p));
                 }
-                // make sure that each ancestors has a node in the tree:
-                while (ancestorPaths.Count > 0)
-                {
-                    var ancestorPath = ancestorPaths.Pop();
-                    var ancestorNode = rootNode.FindDescendent(ancestorPath);
-                    if (ancestorNode == null)
-                    {
-                        ancestorNode = new FileNode(ancestorPath);
-                        Debug.Assert(rootNode.FindDescendent(ancestorPath) == null, "node already exists!");
-                        rootNode.Insert(ancestorNode);
-                    }
-                }
-            }
-            // now do a depth first deletion of each FileNode:
-            rootNode.RemoveFileOrDirectoryRecursively();
+            );
+            Debug.Assert(list.All(p => FileSystem.Exists(p) == false), "Some files/directories still exits?");
+            FileSystem.RemoveDirectory(dirName, false);
         }
 
         public override void RemoveFile(Path path, bool force)
@@ -214,7 +202,7 @@ namespace LessIO.Strategies.Win32
                 yield break;
 
             // normalize dirName so we can assume it doesn't have a slash on the end:
-            string dirName = directory.FullName;
+            string dirName = directory.PathString;
             dirName = dirName.TrimEnd(Path.DirectorySeperatorChars);
             dirName = new Path(dirName).WithWin32LongPathPrefix();
 

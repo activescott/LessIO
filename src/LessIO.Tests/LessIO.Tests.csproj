@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="AssertEx.cs" />
     <Compile Include="FileSystemTests.cs" />
+    <Compile Include="PathEquality.cs" />
     <Compile Include="PathTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBase.cs" />
