@@ -318,7 +318,7 @@ namespace LessIO
         {
             if (pathParts == null)
                 throw new ArgumentNullException();
-            var strs = pathParts.Select(p => p.ToString());
+            var strs = pathParts.Select(p => p.PathString);
             return Combine(strs.ToArray());
         }
 

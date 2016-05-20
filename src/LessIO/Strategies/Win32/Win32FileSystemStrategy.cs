@@ -84,7 +84,7 @@ namespace LessIO.Strategies.Win32
         public override void CreateDirectory(Path path)
         {
             // Since System.IO.Directory.Create() creates all neecessary directories, we emulate here:
-            string pathString = path.ToString();
+            string pathString = path.PathString;
             var dirsToCreate = new List<String>();
             int lengthRoot = path.PathRoot.Length;
 
