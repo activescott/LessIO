@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Init;Build;Deploy;Zip;NugetPackage">
+	<!--
+	References:
+		http://msdn.microsoft.com/en-us/library/vstudio/dd393574.aspx
+		http://msdn.microsoft.com/en-us/library/vstudio/ms164313.aspx
+	-->
+	
+  <PropertyGroup>
+    <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
+
+  <PropertyGroup>
+		<RootDir>..\</RootDir>
+		<TheDeployDir>$(RootDir)\.deploy</TheDeployDir>
+		<AssemblyCopyright>Copyright Scott Willeke ©2016</AssemblyCopyright>
+    <Description>A file system I/O library that overcomes limitations of .NET's System.IO libraries (such as long path names), aspires to be platform independent, and require less time to learn than System.IO.</Description>
+		<TheZipFileName>lessio-v$(TheVersion).zip</TheZipFileName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<TheProjects Include="$(RootDir)\LessIO\LessIO.csproj"></TheProjects>
+    <TheProjects Include="$(RootDir)\LessIO.Tests\LessIO.Tests.csproj"></TheProjects>
+  </ItemGroup>
+
+	<ItemGroup>
+		<DeployFiles Include="$(RootDir)\LessIO\bin\Release\LessIO.dll"></DeployFiles>
+	</ItemGroup>
+
+	<Target Name="Init">
+		<ConvertToAbsolutePath Paths="$(RootDir)">
+			<Output TaskParameter="AbsolutePaths" PropertyName="RootDir"/>
+		</ConvertToAbsolutePath>
+		<!-- Apparently the PropertyGroup values are evaluated early and not reevaluated on demand because I had to run this again to get it to accept the new root dir value -->
+		<ConvertToAbsolutePath Paths="$(TheDeployDir)">
+			<Output TaskParameter="AbsolutePaths" PropertyName="TheDeployDir"/>
+		</ConvertToAbsolutePath>
+
+    <Message Text="Project File Name = $(MSBuildProjectFile)" />
+    <Message Text="Project Extension = $(MSBuildProjectExtension)" />
+    <Message Text="MSBuildProjectDirectory = $(MSBuildProjectDirectory)" />
+    <Message Text="SolutionDir = $(SolutionDir)" />
+
+    <Message Text="RootDir=$(RootDir)" />
+    <Message Text="TheDeployDir=$(TheDeployDir)" />
+
+  </Target>
+
+	<Target Name="Validate">
+		<ItemGroup>
+			<_RequiredProperties Include="TheVersion">
+				<Value>$(TheVersion)</Value>
+			</_RequiredProperties>
+		</ItemGroup>
+
+		<Error 
+			Condition=" '%(_RequiredProperties.Value)'=='' "
+			Text=" Missing required property [%(_RequiredProperties.Identity)]" 
+		/>
+	</Target>
+
+	<Target Name="SetProjectVersion">
+		
+		<ItemGroup>
+			<AssemblyInfoFiles Include="$(RootDir)\LessIO\Properties\AssemblyInfo.cs" />
+		</ItemGroup>
+
+		<AssemblyInfo 
+			OutputFile="@(AssemblyInfoFiles)" 
+			CodeLanguage="C#"
+      AssemblyTitle="LessIO"
+      AssemblyDescription="$(Description)"
+      AssemblyConfiguration=""
+      AssemblyCompany="Scott Willeke"
+			AssemblyVersion="$(TheVersion)"
+			AssemblyFileVersion="$(TheVersion)"
+			AssemblyCopyright="$(AssemblyCopyright)"  
+		>
+    </AssemblyInfo>
+
+	</Target>
+
+	<Target Name="Clean">
+		<RemoveDir Directories="$(TheDeployDir)" />
+	</Target>
+
+	<Target Name="Build" DependsOnTargets="Validate;SetProjectVersion">
+		<Message Text="Building version: $(TheVersion)" />
+		
+		<Message Text="Absolute project path: %(TheProjects.FullPath)" />
+
+		<MSBuild 
+			Projects="%(TheProjects.FullPath)" 
+			Properties="Configuration=Release;Platform=AnyCPU;ApplicationVersion=$(TheVersion);SolutionDir=$(RootDir)" 
+			Targets="Rebuild"
+		/>
+	</Target>
+
+	<Target Name="Deploy" DependsOnTargets="Build;Clean">
+		<MakeDir Directories="$(TheDeployDir)" />
+
+		<Copy
+            SourceFiles="%(DeployFiles.FullPath)"
+            DestinationFolder="$(TheDeployDir)"
+        />
+	</Target>
+
+	<Target Name="Zip" DependsOnTargets="Deploy">
+    <!-- see https://github.com/loresoft/msbuildtasks/blob/master/Source/MSBuild.Community.Tasks/Zip.cs -->
+    <Zip
+			Files="@(DeployFiles)"
+      Flatten="True"
+			ZipFileName="$(TheDeployDir)\$(TheZipFileName)"
+		/>
+	</Target>
+
+	<Target Name="NugetPackage" DependsOnTargets="Deploy">
+		<!-- 
+			See http://docs.nuget.org/Create/Creating-and-Publishing-a-Package
+		 -->
+    <PropertyGroup>
+      <PackageDir>$(TheDeployDir)\nuget-package</PackageDir>
+    </PropertyGroup>
+
+    <Copy
+			SourceFiles="lessio.nuspec"
+			DestinationFolder="$(PackageDir)"
+		/>
+    <XmlPoke
+			XmlInputPath="$(PackageDir)\lessio.nuspec"
+			Query="//package/metadata/version"
+			Value="$(TheVersion)"
+		/>
+    <XmlPoke
+          XmlInputPath="$(PackageDir)\lessio.nuspec"
+          Query="//package/metadata/description"
+          Value="$(Description)"
+		/>
+    
+    <Exec
+			Command="nuget pack &quot;$(PackageDir)\lessio.nuspec&quot; -NoDefaultExcludes -Verbosity Normal" 
+			WorkingDirectory="$(PackageDir)"
+			ContinueOnError="true"
+		>
+			<Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+		</Exec>
+		<Message Text="nuget exit code:$(ErrorCode)" />
+		<Error
+			Condition="$(ErrorCode)!=0"
+			Text="nuget failed. Make sure you have nuget installed and accessible from the command line. See http://docs.nuget.org/docs/reference/command-line-reference"
+		/>
+		<Message 
+			Text="Nuget package built. To test the nuget package run `nuget install lessio -source $(PackageDir)`"
+			Importance="high"
+		/>
+		<Message
+			Importance="high"
+			Text="
+
+Next Steps to publish:
+- Tag the repo: `git tag v$(TheVersion)`
+- Push the tag to github to create the release: `git push --tags`
+- Upload $(TheZipFileName) at https://github.com/activescott/lessmsi/releases/tag/v$(TheVersion)
+- Run `nuget $(PackageDir)\lessio.$(TheVersion).nupkg`??? to push to nuget package.
+" 
+		/>
+	</Target>
+</Project>

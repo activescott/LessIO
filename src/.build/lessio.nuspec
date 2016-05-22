@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>LessIO</id>
+    <version>$version$</version>
+    <authors>Scott Willeke</authors>
+    <licenseUrl>https://github.com/activescott/LessIO/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/activescott/LessIO</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>Copyright 2016</copyright>
+    <tags>file directory files directories io filesystem file-system</tags>
+  </metadata>
+  <files>
+    <file src="..\LessIO.dll" target="lib\net40" />
+  </files>
+</package>

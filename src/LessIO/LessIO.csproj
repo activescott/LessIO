@@ -33,7 +33,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileAttributes.cs" />
@@ -43,11 +42,6 @@
     <Compile Include="Strategies\FileSystemStrategy.cs" />
     <Compile Include="Strategies\Win32\NativeMethods.cs" />
     <Compile Include="Strategies\Win32\Win32FileSystemStrategy.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\README.md">
-      <Link>README.md</Link>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
