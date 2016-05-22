@@ -61,7 +61,7 @@ namespace LessIO
         }
         
         /// <summary>
-        /// Deletes an existing empty directory.
+        /// Removes/deletes an existing empty directory.
         /// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa365488%28v=vs.85%29.aspx
         /// </summary>
         /// <param name="path"></param>
@@ -71,7 +71,7 @@ namespace LessIO
         }
 
         /// <summary>
-        /// Deletes an existing empty directory.
+        /// Removes/deletes an existing directory.
         /// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa365488%28v=vs.85%29.aspx
         /// </summary>
         /// <param name="path">The path to the directory to remove.</param>
@@ -95,6 +95,17 @@ namespace LessIO
         public static void RemoveFile(Path path, bool forcefully)
         {
             Strategy.RemoveFile(path, forcefully);
+        }
+
+        /// <summary>
+        /// Removes/deletes an existing file.
+        /// To remove a directory see <see cref="RemoveDirectory"/>.
+        /// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363915%28v=vs.85%29.aspx
+        /// </summary>
+        /// <param name="path">The file to remove.</param>
+        public static void RemoveFile(Path path)
+        {
+            Strategy.RemoveFile(path, false);
         }
 
         /// <summary>

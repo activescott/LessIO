@@ -354,6 +354,7 @@ namespace LessIO
         }
 
         /// <summary>
+        /// Indicates if the file or directory at the specified path exists.
         /// For code compatibility with <see cref="System.IO.FileSystemInfo.Exists"/>.
         /// </summary>
         public bool Exists
@@ -379,16 +380,6 @@ namespace LessIO
                     || pathString.Length >= 2 && pathString[1] == ':';
                 return rooted;
             }
-        }
-
-
-
-        /// <summary>
-        /// For code compatibility with <see cref="System.IO.FileSystemInfo.Delete()"/>
-        /// </summary>
-        public void Delete()
-        {
-            FileSystem.RemoveFile(this, false);
         }
 
         /// <summary>
