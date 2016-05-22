@@ -161,8 +161,8 @@
 Next Steps to publish:
 - Tag the repo: `git tag v$(TheVersion)`
 - Push the tag to github to create the release: `git push --tags`
-- Upload $(TheZipFileName) at https://github.com/activescott/lessmsi/releases/tag/v$(TheVersion)
-- Run `nuget $(PackageDir)\lessio.$(TheVersion).nupkg`??? to push to nuget package.
+- Upload $(TheZipFileName) at https://github.com/activescott/lessio/releases/tag/v$(TheVersion)
+- Run `nuget push $(PackageDir)\lessio.$(TheVersion).nupkg -Source https://www.nuget.org/api/v2/package -ApiKey 00000000-0000-0000-0000-00000000` to push to nuget package. Get API Key at https://www.nuget.org/account
 " 
 		/>
 	</Target>
