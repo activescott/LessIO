@@ -13,8 +13,8 @@
     "s (such as long path names), aspires to be platform independent, and require les" +
     "s time to learn than System.IO.")]
 [assembly: System.Reflection.AssemblyCompany("Scott Willeke")]
-[assembly: System.Reflection.AssemblyVersion("0.3.9")]
-[assembly: System.Reflection.AssemblyFileVersion("0.3.9")]
+[assembly: System.Reflection.AssemblyVersion("0.3")]
+[assembly: System.Reflection.AssemblyFileVersion("0.3")]
 [assembly: System.Reflection.AssemblyCopyright("Copyright Scott Willeke ©2016")]
 
 
