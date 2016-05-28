@@ -1,12 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 
 namespace LessIO.Tests
 {
-    [TestClass]
     public class PathEquality
     {
         const string Win32LongPathPrefix = @"\\?\";
-        [TestMethod]
+        [Fact]
         public void EqualSimple()
         {
             Path a = new Path(@"c:\aroot\aparent");
@@ -14,7 +13,7 @@ namespace LessIO.Tests
             TestEquality(a, b, true);
         }
 
-        [TestMethod]
+        [Fact]
         public void EqualDespiteCase()
         {
             Path a = new Path(@"c:\aroot\aparent");
@@ -22,7 +21,7 @@ namespace LessIO.Tests
             TestEquality(a, b, true);
         }
 
-        [TestMethod]
+        [Fact]
         public void NotEqualSimple()
         {
             Path a = new Path(@"c:\aroot\aparent");
@@ -30,7 +29,7 @@ namespace LessIO.Tests
             TestEquality(a, b, false);
         }
 
-        [TestMethod]
+        [Fact]
         public void EqualTrailingPath()
         {
             Path a = new Path(@"c:\aroot\aparent");
@@ -38,7 +37,7 @@ namespace LessIO.Tests
             TestEquality(a, b, true);
         }
 
-        [TestMethod]
+        [Fact]
         public void EqualDespiteWin32Prefix()
         {
             Path a = new Path(@"c:\aroot\aparent");
@@ -46,7 +45,7 @@ namespace LessIO.Tests
             TestEquality(a, b, true);
         }
 
-        [TestMethod]
+        [Fact]
         public void NotEqualWin32Prefix()
         {
             Path a = new Path(@"c:\aroot\aparent");
@@ -54,34 +53,33 @@ namespace LessIO.Tests
             TestEquality(a, b, false);
         }
 
-        [TestMethod]
+        [Fact]
         public void NotEqualToEmpty()
         {
             Path a = new Path(@"c:\aroot\aparent");
             TestEquality(a, Path.Empty, false);
         }
 
-        [TestMethod]
+        [Fact]
         public void NotEqualToNull()
         {
             Path a = new Path(@"c:\aroot\aparent");
-            Assert.AreNotEqual(a, null);
-            Assert.IsFalse(a.Equals(null));
-            Assert.IsFalse(object.Equals(a, null));
+            Assert.False(a.Equals(null));
+            Assert.False(object.Equals(a, null));
         }
 
         private void TestEquality(Path a, Path b, bool areEqual)
         {
             if (areEqual)
-                Assert.AreEqual(a, b);
+                Assert.Equal(a, b);
             else
-                Assert.AreNotEqual(a, b);
+                Assert.NotEqual(a, b);
 
-            Assert.IsTrue(areEqual == (a == b));
-            Assert.IsTrue(areEqual != (a != b));
-            Assert.IsTrue(areEqual == a.Equals(b));
-            Assert.IsTrue(areEqual == b.Equals(a));
-            Assert.IsTrue(areEqual == object.Equals(a, b));
+            Assert.True(areEqual == (a == b));
+            Assert.True(areEqual != (a != b));
+            Assert.True(areEqual == a.Equals(b));
+            Assert.True(areEqual == b.Equals(a));
+            Assert.True(areEqual == object.Equals(a, b));
         }
     }
 }

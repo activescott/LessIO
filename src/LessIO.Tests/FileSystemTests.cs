@@ -1,14 +1,11 @@
-﻿using System;
-using SysPath = System.IO.Path;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using System.Linq;
 
 namespace LessIO.Tests
 {
-    [TestClass]
     public class FileSystemTests : TestBase
     {
-        [TestMethod]
+        [Fact]
         public void ListContentsEmptyDir()
         {
             Path p = GetTestPath(@"emptyDir");
@@ -16,7 +13,7 @@ namespace LessIO.Tests
             AssertEx.IsEmpty(contents);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsOneLevel()
         {
             Path p = GetTestPath(@"oneLevel");
@@ -26,10 +23,10 @@ namespace LessIO.Tests
                 GetTestPath(@"oneLevel\test - Copy.txt"),
                 GetTestPath(@"oneLevel\test.txt"),
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsTwoLevels()
         {
             Path p = GetTestPath(@"twoLevels");
@@ -39,25 +36,25 @@ namespace LessIO.Tests
                 GetTestPath(@"twoLevels\secondLevel"),
                 GetTestPath(@"twoLevels\test.txt")
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsTwoLevelsRecursive()
         {
             Path p = GetTestPath(@"twoLevels");
             var actual = FileSystem.ListContents(p, true).ToArray();
             var expected = new Path[]
             {
-                GetTestPath(@"twoLevels\test.txt"),
                 GetTestPath(@"twoLevels\secondLevel"),
+                GetTestPath(@"twoLevels\test.txt"),
                 GetTestPath(@"twoLevels\secondLevel\test (2).txt"),
                 GetTestPath(@"twoLevels\secondLevel\test.txt"),
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsTwoLevelsNotRecursive()
         {
             Path p = GetTestPath(@"twoLevels");
@@ -67,10 +64,10 @@ namespace LessIO.Tests
                 GetTestPath(@"twoLevels\secondLevel"),
                 GetTestPath(@"twoLevels\test.txt")
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsWithSpaces()
         {
             Path p = GetTestPath(@"with spaces");
@@ -79,10 +76,10 @@ namespace LessIO.Tests
             {
                 GetTestPath(@"with spaces\file with spaces.txt"),
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsLongPath()
         {
             Path p = GetTestPath(@"long-path\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\toppinglong-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\");
@@ -91,10 +88,10 @@ namespace LessIO.Tests
             {
                 GetTestPath(@"long-path\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\toppinglong-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\test.txt"),
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsLevelsWithoutFiles()
         {
             Path p = GetTestPath(@"levelsWithoutFiles");
@@ -104,10 +101,10 @@ namespace LessIO.Tests
                 GetTestPath(@"levelsWithoutFiles\secondLevel"),
                 GetTestPath(@"levelsWithoutFiles\secondLevel\thirdLevel"),
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsSomeLevelsWithoutFiles()
         {
             Path p = GetTestPath(@"someLevelsWithoutFiles");
@@ -118,10 +115,10 @@ namespace LessIO.Tests
                 GetTestPath(@"someLevelsWithoutFiles\secondLevel\thirdLevel"),
                 GetTestPath(@"someLevelsWithoutFiles\secondLevel\thirdLevel\test.txt"),
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
-        [TestMethod]
+        [Fact]
         public void ListContentsFiveLevels()
         {
             Path p = GetTestPath(@"fiveLevels");
@@ -137,7 +134,7 @@ namespace LessIO.Tests
                 GetTestPath(@"fiveLevels\one\two\three\four\5.1\test1.txt"),
                 GetTestPath(@"fiveLevels\one\two\three\four\5.2\test2.txt"),
             };
-            CollectionAssert.AreEquivalent(expected, actual);
+            Assert.Equal(expected, actual);
         }
     }
 }

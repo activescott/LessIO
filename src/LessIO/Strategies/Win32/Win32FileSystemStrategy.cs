@@ -46,9 +46,9 @@ namespace LessIO.Strategies.Win32
                 path.WithWin32LongPathPrefix(),
                 NativeMethods.EFileAccess.FILE_READ_ATTRIBUTES | NativeMethods.EFileAccess.FILE_WRITE_ATTRIBUTES,
                 NativeMethods.EFileShare.Read | NativeMethods.EFileShare.Write| NativeMethods.EFileShare.Delete,
-                IntPtr.Zero,
+                IntPtr.Zero,// See https://github.com/activescott/LessIO/issues/4 before changing these flags.
                 NativeMethods.ECreationDisposition.OpenExisting,
-                NativeMethods.EFileAttributes.Normal | NativeMethods.EFileAttributes.BackupSemantics,
+                NativeMethods.EFileAttributes.None,
                 IntPtr.Zero);
             using (h)
             {

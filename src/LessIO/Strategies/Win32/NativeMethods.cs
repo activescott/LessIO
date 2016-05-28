@@ -89,6 +89,7 @@ namespace LessIO.Strategies.Win32
         [Flags]
         internal enum EFileAttributes : uint
         {
+            None = 0x0,
             Readonly = 0x00000001,
             Hidden = 0x00000002,
             System = 0x00000004,
