@@ -12,5 +12,14 @@
 *.swp
 /src/.deploy
 _Resharper*/
-src/packages/**
 src/TestResult.xml
+
+# Nuget: http://docs.nuget.org/consume/package-restore#omitting-packages-from-source-control
+## Ignore NuGet Packages
+*.nupkg
+## Ignore the packages folder
+**/packages/*
+## except build/, which is used as an MSBuild target.
+!**/packages/build/
+## Uncomment if necessary however generally it will be regenerated when needed
+!**/packages/repositories.config
