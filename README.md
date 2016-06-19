@@ -1,3 +1,7 @@
+[![nuget][nuget-badge]][nuget-url]
+[nuget-badge]: https://img.shields.io/nuget/v/LessIO.svg
+[nuget-url]: https://www.nuget.org/packages/LessIO/
+ 
 LessIO
 ========
 This is a library for dealing with File I/O on .NET that overcomes some limitations of .NET's System.IO libraries (such as long path names) and aspires to be platform independent and require less time to ramp up on than System.IO.
@@ -10,6 +14,9 @@ Goals
 * Support File I/O operations on Windows that .NET's System.IO libraries fail to support such as long paths (those longer than 260 characters).
 * Provide a basis for platform independent file system access across both Windows and Unix-like systems such as Linux and Mac OSX, and potentially others (cloud file storage?).
 
+Install
+========
+Install [via NuGet][nuget-url].
 
 Concepts & Usage
 ========
