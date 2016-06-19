@@ -20,12 +20,12 @@ Install [via NuGet][nuget-url].
 
 Concepts & Usage
 ========
-Two concepts are necessary to use the library `FileSystem` and `Path`. The static `FileSystem` class is a static class that contains all of the operations available on the `FileSystem`. Any operation that has a path argument, such as `FileSystem.CreateDirectory`, accepts paths as strongly typed `Path` objects rather than strings. For example, 
+Two concepts are necessary to use the library `FileSystem` and `Path`. The static `FileSystem` class is a static class that contains all of the operations available on the `FileSystem`. Any operation that has a path argument, such as `FileSystem.CreateDirectory`, accepts paths as strongly typed `Path` objects rather than strings. For example:
 
     Path destDir = new Path(@"c:\src\lessmsi");
     FileSystem.CreateDirectory(destDir);
 
-Having paths strongly typed rather than strings forces the caller to be more explicit and I believe leads to less errors in the code. `Path` also normalizes weird paths such as those with double directory seperators so that paths like c:\src\\lessmsi and c:\src\\lessmsi are equal when compared:
+Having paths strongly typed rather than strings forces the caller to be more explicit and I believe leads to less errors in the code. `Path` also normalizes weird paths such as those with double directory seperators so that paths like `c:\src\\lessmsi` and `c:\src\\lessmsi` are equal when compared:
 
     new Path(@"c:\src\\lessmsi") == new Path(@"c:\src\lessmsi") // true
 
