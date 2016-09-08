@@ -7,6 +7,7 @@ namespace LessIO.Tests
     public class PathTests : TestBase
     {
         const string Win32LongPathPrefix = @"\\?\";
+        const string Win32LongPathPrefixUNC = @"\\?\UNC\";
         private void TestGetParentPath(string expected, string testInput)
         {
             var actual = new Path(testInput).Parent.PathString;
@@ -159,7 +160,7 @@ namespace LessIO.Tests
         [Fact]
         public void PathNormalizesDoubleSeperators()
         {
-            //At least with Win32 I found that Double seperators in paths like c:\dir\\file.ext will fail to work (Win32 will not find an existing file due to the double seperator). Specifically I had the path 'C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\TestFiles\\MsiInput\\NUnit-2.5.2.9222.msi' where the file existed but failed to get a valid handle ot it due to the double slash.
+            //At least with Win32 I found that Double seperators in paths like c:\dir\\file.ext will fail to work (Win32 will not find an existing file due to the double seperator). Specifically I had the path 'C:\src\lessmsi\src\Lessmsi.Tests\bin\Debug\TestFiles\\MsiInput\\NUnit-2.5.2.9222.msi' where the file existed but failed to get a valid handle to it due to the double slash.
             var p = new Path(@"c:\dir\\file.ext");
             Assert.Equal(@"c:\dir\file.ext", p.PathString);
         }
@@ -169,6 +170,39 @@ namespace LessIO.Tests
         {
             LessIO.Path p = GetTestPath(@"oneLevel\\test.txt");
             Assert.True(FileSystem.Exists(p), "Path with duplicate seperator should still be found");
+        }
+
+        /// <summary>
+        /// Paths like \\?\UNC\server\thing\stuff should work per https://github.com/activescott/lessmsi/issues/58#issuecomment-219469687
+        /// </summary>
+        [Fact]
+        public void UNCLongFormPathsShouldBeRooted()
+        {
+            var p = new LessIO.Path(@"\\?\UNC\server\thing\stuff");
+            Assert.True(p.IsPathRooted);
+        }
+
+        [Fact]
+        public void UNCLongFormPathsGetPathRoot()
+        {
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder\subfolder");
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder\subfolder\");
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder\subfolder\another");
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder");
+        }
+
+        [Fact]
+        public void WithPrefixShouldIncludeUNCPrefix()
+        {
+            var p = new LessIO.Path(@"\\ComputerName\SharedFolder");
+            Assert.Equal(Win32LongPathPrefixUNC + @"ComputerName\SharedFolder", p.WithWin32LongPathPrefix());
+        }
+
+        [Fact]
+        public void WithPrefixShouldIncludeStandardPrefix()
+        {
+            var p = new Path(@"c:\dir\\file.ext");
+            Assert.Equal(Win32LongPathPrefix + @"c:\dir\file.ext", p.WithWin32LongPathPrefix());
         }
     }
 }

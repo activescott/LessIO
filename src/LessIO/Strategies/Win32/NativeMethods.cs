@@ -18,8 +18,15 @@ namespace LessIO.Strategies.Win32
         internal const int MAX_PATH = 260;
         /// <summary>
         /// This is the special prefix to prepend to paths to support up to 32,767 character paths.
+        /// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
         /// </summary>
         internal static readonly string LongPathPrefix = @"\\?\";
+
+        /// <summary>
+        /// This is the special prefix to prepend to UNC paths to support up to 32,767 character paths.
+        /// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
+        /// </summary>
+        internal static readonly string LongPathPrefixUNC = @"\\?\UNC\";
 
         internal static IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
