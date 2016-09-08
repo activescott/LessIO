@@ -185,24 +185,24 @@ namespace LessIO.Tests
         [Fact]
         public void UNCLongFormPathsGetPathRoot()
         {
-            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"\ComputerName\SharedFolder\subfolder");
-            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"\ComputerName\SharedFolder\subfolder\");
-            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"\ComputerName\SharedFolder\subfolder\another");
-            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"\ComputerName\SharedFolder");
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder\subfolder");
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder\subfolder\");
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder\subfolder\another");
+            TestGetPathRoot(@"\\ComputerName\SharedFolder", Win32LongPathPrefixUNC + @"ComputerName\SharedFolder");
         }
 
         [Fact]
         public void WithPrefixShouldIncludeUNCPrefix()
         {
             var p = new LessIO.Path(@"\\ComputerName\SharedFolder");
-            Assert.Equal(Win32LongPathPrefixUNC + @"\ComputerName\SharedFolder", p.WithWin32LongPathPrefix());
+            Assert.Equal(Win32LongPathPrefixUNC + @"ComputerName\SharedFolder", p.WithWin32LongPathPrefix());
         }
 
         [Fact]
         public void WithPrefixShouldIncludeStandardPrefix()
         {
             var p = new Path(@"c:\dir\\file.ext");
-            Assert.Equal(Win32LongPathPrefixUNC + Win32LongPathPrefix + @"c:\dir\\file.ext", p.WithWin32LongPathPrefix());
+            Assert.Equal(Win32LongPathPrefix + @"c:\dir\file.ext", p.WithWin32LongPathPrefix());
         }
     }
 }

@@ -13,6 +13,19 @@ namespace LessIO
         private static readonly string _pathEmpty = string.Empty;
         public static readonly Path Empty = new Path();
 
+        /// <summary>
+        /// This is the special prefix to prepend to paths to support up to 32,767 character paths.
+        /// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
+        /// </summary>
+        private static readonly string Win32LongPathPrefix = @"\\?\";
+        /// <summary>
+        /// This is the special prefix to prepend to paths to support long paths for UNC paths.
+        /// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247(v=vs.85).aspx#maxpath
+        /// </summary>
+        private static readonly string Win32LongPathPrefixUNC = @"\\?\UNC\";
+
+        private static readonly string UNCPrefix = @"\\";
+
         // TODO: Add validation using a strategy? Or just use it as a strongly typed path to force caller to be explicit?
 
         public Path(string path)
@@ -53,11 +66,13 @@ namespace LessIO
 
         private static string StripWin32PathPrefix(string pathString)
         {
-            //TODO: UNC
-            if (pathString.StartsWith(Path.Win32LongPathPrefixDontUse))
-                return pathString.Substring(Path.Win32LongPathPrefixDontUse.Length);
-            else
-                return pathString;
+            if (pathString.StartsWith(Win32LongPathPrefixUNC))
+                return UNCPrefix + pathString.Substring(Win32LongPathPrefixUNC.Length);
+
+            if (pathString.StartsWith(Win32LongPathPrefix))
+                return pathString.Substring(Win32LongPathPrefix.Length);
+            
+            return pathString;
         }
 
         /// <summary>
@@ -192,45 +207,27 @@ namespace LessIO
             return PathEquals(a.PathString, b.PathString);
         }
 
-        
-        /// <summary>
-        /// This is the special prefix to prepend to paths to support up to 32,767 character paths.
-        /// </summary>
-        private static readonly string Win32LongPathPrefixDontUse = @"\\?\";
-        /*
-        /// <summary>
-        /// Returns the specified path with the <see cref="LongPathPrefix"/> prepended if necessary.
-        /// </summary>
-        public static string EnsureWin32LongPathPrefix(string path)
-        {
-            //TODO: Needs to look for/support UNC path prefix too!
-            if (!path.StartsWith(Win32LongPathPrefixDontUse)) // More consistent to deal with if we just add it to all of them: if (!path.StartsWith(LongPathPrefix) && path.Length >= MAX_PATH)
-                return Win32LongPathPrefixDontUse + path;
-            else
-                return path;
-        }
-
-        public static Path EnsureWin32LongPathPrefix(Path path)
-        {
-            return new Path(EnsureWin32LongPathPrefix(path.ToString()));
-        }
-        */
-
         /// <summary>
         /// Long-form filenames are not supported by the .NET system libraries, so we do win32 calls.
         /// See https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx#maxpath
         /// </summary>
         /// <remarks>
-        /// The <see cref="Path"/> object will never store the Win32 long path prefix. Instead use this method to trim it off when necessary.
+        /// The <see cref="Path"/> object will never store the Win32 long path prefix. Instead use this method to add it back when necessary (i.e. when making direct calls into Win32 APIs).
         /// </remarks>
         public string WithWin32LongPathPrefix()
         {
-            const string Win32LongPathPrefix = @"\\?\";
-            //TODO: Needs to look for/support UNC path prefix too!
             if (!PathString.StartsWith(Win32LongPathPrefix)) // More consistent to deal with if we just add it to all of them: if (!path.StartsWith(LongPathPrefix) && path.Length >= MAX_PATH)
-                return Win32LongPathPrefix + this.PathString;
+            {
+                if (PathString.StartsWith(UNCPrefix))
+                    return Win32LongPathPrefixUNC + this.PathString.Substring(UNCPrefix.Length);
+                else
+                    return Win32LongPathPrefix + this.PathString;
+            }
             else
+            {
+                //NOTE that Win32LongPathPrefixUNC is a superset of Win32LongPathPrefix we just assume the right pathprefix is already there.
                 return this.PathString;
+            }
         }
 
         public override int GetHashCode()
