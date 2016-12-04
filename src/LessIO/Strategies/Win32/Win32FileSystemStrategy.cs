@@ -89,6 +89,11 @@ namespace LessIO.Strategies.Win32
             int lengthRoot = path.PathRoot.Length;
 
             var firstNonRootPathIndex = pathString.IndexOfAny(Path.DirectorySeperatorChars, lengthRoot);
+            if (firstNonRootPathIndex == -1)
+            {
+                // this is a directory directly off of the root (because no, non-root directory seperators exist)
+                firstNonRootPathIndex = pathString.Length - 1; // set it to the whole path so that the loop below will create the root dir
+            }
             var i = firstNonRootPathIndex;
             while (i < pathString.Length)
             {
