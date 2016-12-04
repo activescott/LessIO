@@ -1,4 +1,5 @@
 ﻿using Xunit;
+using System.Diagnostics;
 using System.Linq;
 
 namespace LessIO.Tests
@@ -135,6 +136,55 @@ namespace LessIO.Tests
                 GetTestPath(@"fiveLevels\one\two\three\four\5.2\test2.txt"),
             };
             Assert.Equal(expected, actual);
+        }
+
+        /// <summary>
+        /// Based on https://github.com/activescott/lessmsi/issues/70
+        /// </summary>
+        [Fact]
+        public void CreateDirectoryOnSubstDrive()
+        {
+            //This is disgusting to do in a test and risky to cleanup, but I'll clean it up later (maybe)
+
+            //Map drive:
+            SubstDrive(false);
+
+            // run test:
+            var testPath = new Path(@"t:\CreateDirectoryOnSubstDrive");
+            try
+            {
+                // The test is to make sure that this succeeds and doesn't throw:
+                FileSystem.CreateDirectory(testPath);
+                Assert.True(FileSystem.Exists(testPath));
+            }
+            finally
+            {
+                if (FileSystem.Exists(testPath))
+                    FileSystem.RemoveDirectory(testPath);
+                //cleanup the subst drive
+                SubstDrive(true);
+            }
+        }
+
+        private void SubstDrive(bool remove)
+        {
+            var subst = new Process();
+            subst.StartInfo.FileName = @"C:\Windows\System32\subst.exe";
+            subst.StartInfo.Arguments = remove ? "/D T:" : "T: " + GetTestPath("");
+            subst.StartInfo.UseShellExecute = false;
+            subst.StartInfo.RedirectStandardError = true;
+            subst.StartInfo.RedirectStandardOutput = true;
+            var started = subst.Start();
+            Debug.Assert(started);
+            subst.WaitForExit();
+            Debug.Print("Subst output:");
+
+            if (0 != subst.ExitCode)
+            {
+                var stderr = subst.StandardError.ReadToEnd();
+                var stdout = subst.StandardOutput.ReadToEnd();
+                throw new System.Exception("subst failed:" + stdout + "\r\n" + stderr);
+            }
         }
     }
 }
