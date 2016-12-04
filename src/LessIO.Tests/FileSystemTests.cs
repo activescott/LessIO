@@ -83,6 +83,15 @@ namespace LessIO.Tests
         [Fact]
         public void ListContentsLongPath()
         {
+            //NOTE: windows is terrible with a path this long so even git won't allow committing a file with a path this long on windows. So we create it here:
+            Path initTestFile = GetTestPath(@"long-path\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\toppinglong-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\test.txt");
+            if (!FileSystem.Exists(initTestFile))
+            {
+                FileSystem.CreateDirectory(initTestFile.Parent);
+                FileSystem.Copy(GetTestPath(@"test.txt"), initTestFile);
+            }
+
+            //NOW onto the test...
             Path p = GetTestPath(@"long-path\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\long-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\toppinglong-directory-name\very\unusually\long\directory\name\with\cream\sugar\and\chocolate\topping\");
             var actual = FileSystem.ListContents(p).ToArray();
             var expected = new Path[]
@@ -93,14 +102,14 @@ namespace LessIO.Tests
         }
 
         [Fact]
-        public void ListContentsLevelsWithoutFiles()
+        public void ListContentsAllLevelsWithoutFiles()
         {
-            Path p = GetTestPath(@"levelsWithoutFiles");
+            Path p = GetTestPath(@"allLevelsWithoutFiles");
             var actual = FileSystem.ListContents(p, true).ToArray();
             var expected = new Path[]
             {
-                GetTestPath(@"levelsWithoutFiles\secondLevel"),
-                GetTestPath(@"levelsWithoutFiles\secondLevel\thirdLevel"),
+                GetTestPath(@"allLevelsWithoutFiles\secondLevel"),
+                GetTestPath(@"allLevelsWithoutFiles\secondLevel\thirdLevel"),
             };
             Assert.Equal(expected, actual);
         }
@@ -178,7 +187,7 @@ namespace LessIO.Tests
             Debug.Assert(started);
             subst.WaitForExit();
             Debug.Print("Subst output:");
-
+            //because -1 means' already substed??
             if (0 != subst.ExitCode)
             {
                 var stderr = subst.StandardError.ReadToEnd();
