@@ -1,6 +1,5 @@
-[![nuget][nuget-badge]][nuget-url]
-[nuget-badge]: https://img.shields.io/nuget/v/LessIO.svg
-[nuget-url]: https://www.nuget.org/packages/LessIO/
+[![nuget](https://img.shields.io/nuget/v/LessIO.svg)](https://www.nuget.org/packages/LessIO/)
+
  
 LessIO
 ========
@@ -16,7 +15,7 @@ Goals
 
 Install
 ========
-Install [via NuGet][nuget-url].
+Install [via NuGet](https://www.nuget.org/packages/LessIO/).
 
 Concepts & Usage
 ========
