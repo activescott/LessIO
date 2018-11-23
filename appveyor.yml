@@ -1,4 +1,11 @@
 # see http://www.appveyor.com/docs/appveyor-yml
+
+##### ENABLE REMOVE RDP ACCESS #####
+# https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
+init:
+  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#######################
+
 #---------------------------------#
 #      build configuration        #
 #---------------------------------#
@@ -14,3 +21,9 @@ environment:
 test:
  assemblies:
   - .\src\.deploy\LessIO.Tests.dll
+
+##### KEEP RDP ACCESS #####
+# https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#######################
