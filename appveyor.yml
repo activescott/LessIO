@@ -10,7 +10,7 @@
 #      build configuration        #
 #---------------------------------#
 build_script:
- - cmd: 'msbuild .\src\.build\lessio.msbuild /p:TheVersion=%APPVEYOR_BUILD_NUMBER% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"'
+ - cmd: 'msbuild .\src\.build\lessio.msbuild /p:TheVersion="%APPVEYOR_BUILD_NUMBER%" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"'
 
 #---------------------------------#
 #       tests configuration       #
