@@ -105,8 +105,15 @@ namespace LessIO.Tests
         [Fact]
         public void ListContentsAllLevelsWithoutFiles()
         {
-            Path p = GetTestPath(@"allLevelsWithoutFiles");
-            var actual = FileSystem.ListContents(p, true).ToArray();
+            //NOTE: Git cannot support empty directories, so we create these here:
+            Path p = GetTestPath(@"allLevelsWithoutFiles\secondLevel\thirdLevel");
+            if (!FileSystem.Exists(p))
+            {
+                FileSystem.CreateDirectory(p);
+            }
+
+            //NOW onto the test...
+            var actual = FileSystem.ListContents(GetTestPath(@"allLevelsWithoutFiles"), true).ToArray();
             var expected = new Path[]
             {
                 GetTestPath(@"allLevelsWithoutFiles\secondLevel"),
