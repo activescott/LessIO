@@ -17,6 +17,7 @@
 		<AssemblyCopyright>Copyright Scott Willeke ©2016</AssemblyCopyright>
     <Description>A file system I/O library that overcomes limitations of .NET's System.IO libraries (such as long path names), aspires to be platform independent, and require less time to learn than System.IO.</Description>
 		<TheZipFileName>lessio-v$(TheVersion).zip</TheZipFileName>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -25,7 +26,8 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<DeployFiles Include="$(RootDir)\LessIO\bin\Release\LessIO.dll"></DeployFiles>
+		<DeployFiles Include="$(RootDir)\LessIO\bin\$(Configuration)\LessIO.dll"></DeployFiles>
+    <DeployFiles Include="$(RootDir)\LessIO.Tests\bin\$(Configuration)\LessIO.Tests.dll"></DeployFiles>
 	</ItemGroup>
 
 	<Target Name="Init">
@@ -92,7 +94,7 @@
 
 		<MSBuild 
 			Projects="%(TheProjects.FullPath)" 
-			Properties="Configuration=Release;Platform=AnyCPU;ApplicationVersion=$(TheVersion);SolutionDir=$(RootDir)" 
+			Properties="Configuration=$(Configuration);Platform=AnyCPU;ApplicationVersion=$(TheVersion);SolutionDir=$(RootDir)" 
 			Targets="Rebuild"
 		/>
 	</Target>
@@ -100,10 +102,24 @@
 	<Target Name="Deploy" DependsOnTargets="Build;Clean">
 		<MakeDir Directories="$(TheDeployDir)" />
 
-		<Copy
-            SourceFiles="%(DeployFiles.FullPath)"
-            DestinationFolder="$(TheDeployDir)"
-        />
+    <Copy
+      SourceFiles="%(DeployFiles.FullPath)"
+      DestinationFolder="$(TheDeployDir)"
+    />
+
+    <!-- Prepares for running tests in $(TheDeployDir) -->
+    <ItemGroup>
+      <TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\LessIO.Tests.dll" />
+      <TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.execution.desktop.dll" />
+      <TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.abstractions.dll" />
+      <TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.core.dll" />
+      <TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.assert.dll" />
+    </ItemGroup>
+    
+    <Copy
+      SourceFiles="%(TestBinaries.FullPath)"
+      DestinationFolder="$(TheDeployDir)"
+    />
 	</Target>
 
 	<Target Name="Zip" DependsOnTargets="Deploy">
