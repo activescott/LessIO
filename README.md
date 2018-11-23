@@ -1,8 +1,11 @@
-[![nuget](https://img.shields.io/nuget/v/LessIO.svg)](https://www.nuget.org/packages/LessIO/)
-
- 
 LessIO
 ========
+[![Build status](https://ci.appveyor.com/api/projects/status/0qp51hmyyurv22ss?svg=true)](https://ci.appveyor.com/project/activescott/lessio)
+[![nuget](https://img.shields.io/nuget/v/LessIO.svg)](https://www.nuget.org/packages/LessIO/)
+[![Nuget Downloads](https://img.shields.io/nuget/dt/lessio.svg?style=popout)](https://www.nuget.org/packages/LessIO/) 
+
+
+
 This is a library for dealing with File I/O on .NET that overcomes some limitations of .NET's System.IO libraries (such as long path names) and aspires to be platform independent and require less time to ramp up on than System.IO.
 
 It was created to factor out some of the file-system specific features that have built up in the [LessMSI project](https://github.com/activescott/lessmsi).
