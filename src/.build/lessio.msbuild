@@ -17,6 +17,7 @@
 		<AssemblyCopyright>Copyright Scott Willeke ©2016</AssemblyCopyright>
     <Description>A file system I/O library that overcomes limitations of .NET's System.IO libraries (such as long path names), aspires to be platform independent, and require less time to learn than System.IO.</Description>
 		<TheZipFileName>lessio-v$(TheVersion).zip</TheZipFileName>
+    <NugetPath>../.nuget/nuget.exe</NugetPath>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -36,6 +37,9 @@
 		<ConvertToAbsolutePath Paths="$(TheDeployDir)">
 			<Output TaskParameter="AbsolutePaths" PropertyName="TheDeployDir"/>
 		</ConvertToAbsolutePath>
+    <ConvertToAbsolutePath Paths="$(NugetPath)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="NugetPath"/>
+    </ConvertToAbsolutePath>
 
     <Message Text="Project File Name = $(MSBuildProjectFile)" />
     <Message Text="Project Extension = $(MSBuildProjectExtension)" />
@@ -85,7 +89,14 @@
 		<RemoveDir Directories="$(TheDeployDir)" />
 	</Target>
 
-	<Target Name="Build" DependsOnTargets="Validate;SetProjectVersion">
+  <Target Name="EnsureDependencies" DependsOnTargets="Init">
+    <!-- Only download a new copy of nuget.exe if we don't have a copy available -->
+    <WebDownload Condition="!Exists('$(NugetPath)')" Filename="$(NugetPath)" FileUri="https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" />
+
+    <Exec Command='$(NugetPath) restore -Verbosity Detailed -NonInteractive -OutputDirectory $(RootDir)\packages\ -Source "https://api.nuget.org/v3/index.json" $(RootDir)\LessIO.sln'></Exec>
+  </Target>
+
+	<Target Name="Build" DependsOnTargets="Validate;EnsureDependencies;SetProjectVersion">
 		<Message Text="Building version: $(TheVersion)" />
 		
 		<Message Text="Absolute project path: %(TheProjects.FullPath)" />
