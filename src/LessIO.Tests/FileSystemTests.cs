@@ -1,6 +1,7 @@
 ﻿using Xunit;
 using System.Diagnostics;
 using System.Linq;
+using System;
 
 namespace LessIO.Tests
 {
@@ -194,6 +195,22 @@ namespace LessIO.Tests
                 var stdout = subst.StandardOutput.ReadToEnd();
                 throw new System.Exception("subst failed:" + stdout + "\r\n" + stderr);
             }
+        }
+
+        /// <summary>
+        /// Should fail with a descriptive/actionable error message when source doesn't exist.
+        /// </summary>
+        [Fact]
+        public void CopyShouldFailWhenSourceDoesntExist()
+        {
+            Path src = GetTestPath(@"file-does-not-exist.txt");
+            Path dest = GetTestPath(@"file-does-not-exist-dest.txt");
+            var ex = Assert.Throws<System.Exception>(() => FileSystem.Copy(src, dest));
+            Console.WriteLine("Actual ERR MSG:" + ex.Message);
+            Assert.Equal(
+                string.Format("The file \"{0}\" does not exist.", src), 
+                ex.Message
+            );
         }
     }
 }

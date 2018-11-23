@@ -4,29 +4,31 @@
 	References:
 		http://msdn.microsoft.com/en-us/library/vstudio/dd393574.aspx
 		http://msdn.microsoft.com/en-us/library/vstudio/ms164313.aspx
-	-->
+	\-->
 	
-  <PropertyGroup>
-    <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
+	<PropertyGroup>
+		<MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)</MSBuildCommunityTasksPath>
+	</PropertyGroup>
+	<Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
 
-  <PropertyGroup>
+	<PropertyGroup>
 		<RootDir>..\</RootDir>
 		<TheDeployDir>$(RootDir)\.deploy</TheDeployDir>
 		<AssemblyCopyright>Copyright Scott Willeke ©2016</AssemblyCopyright>
-    <Description>A file system I/O library that overcomes limitations of .NET's System.IO libraries (such as long path names), aspires to be platform independent, and require less time to learn than System.IO.</Description>
+		<Description>A file system I/O library that overcomes limitations of .NET's System.IO libraries (such as long path names), aspires to be platform independent, and require less time to learn than System.IO.</Description>
 		<TheZipFileName>lessio-v$(TheVersion).zip</TheZipFileName>
-    <NugetPath>../.nuget/nuget.exe</NugetPath>
+		<NugetPath>../.nuget/nuget.exe</NugetPath>
+		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<TheProjects Include="$(RootDir)\LessIO\LessIO.csproj"></TheProjects>
-    <TheProjects Include="$(RootDir)\LessIO.Tests\LessIO.Tests.csproj"></TheProjects>
-  </ItemGroup>
+		<TheProjects Include="$(RootDir)\LessIO.Tests\LessIO.Tests.csproj"></TheProjects>
+	</ItemGroup>
 
 	<ItemGroup>
-		<DeployFiles Include="$(RootDir)\LessIO\bin\Release\LessIO.dll"></DeployFiles>
+		<DeployFiles Include="$(RootDir)\LessIO\bin\$(Configuration)\LessIO.dll"></DeployFiles>
+		<DeployFiles Include="$(RootDir)\LessIO.Tests\bin\$(Configuration)\LessIO.Tests.dll"></DeployFiles>
 	</ItemGroup>
 
 	<Target Name="Init">
@@ -37,19 +39,19 @@
 		<ConvertToAbsolutePath Paths="$(TheDeployDir)">
 			<Output TaskParameter="AbsolutePaths" PropertyName="TheDeployDir"/>
 		</ConvertToAbsolutePath>
-    <ConvertToAbsolutePath Paths="$(NugetPath)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="NugetPath"/>
-    </ConvertToAbsolutePath>
+		<ConvertToAbsolutePath Paths="$(NugetPath)">
+			<Output TaskParameter="AbsolutePaths" PropertyName="NugetPath"/>
+		</ConvertToAbsolutePath>
 
-    <Message Text="Project File Name = $(MSBuildProjectFile)" />
-    <Message Text="Project Extension = $(MSBuildProjectExtension)" />
-    <Message Text="MSBuildProjectDirectory = $(MSBuildProjectDirectory)" />
-    <Message Text="SolutionDir = $(SolutionDir)" />
+		<Message Text="Project File Name = $(MSBuildProjectFile)" />
+		<Message Text="Project Extension = $(MSBuildProjectExtension)" />
+		<Message Text="MSBuildProjectDirectory = $(MSBuildProjectDirectory)" />
+		<Message Text="SolutionDir = $(SolutionDir)" />
 
-    <Message Text="RootDir=$(RootDir)" />
-    <Message Text="TheDeployDir=$(TheDeployDir)" />
+		<Message Text="RootDir=$(RootDir)" />
+		<Message Text="TheDeployDir=$(TheDeployDir)" />
 
-  </Target>
+	</Target>
 
 	<Target Name="Validate">
 		<ItemGroup>
@@ -73,15 +75,15 @@
 		<AssemblyInfo 
 			OutputFile="@(AssemblyInfoFiles)" 
 			CodeLanguage="C#"
-      AssemblyTitle="LessIO"
-      AssemblyDescription="$(Description)"
-      AssemblyConfiguration=""
-      AssemblyCompany="Scott Willeke"
+			AssemblyTitle="LessIO"
+			AssemblyDescription="$(Description)"
+			AssemblyConfiguration=""
+			AssemblyCompany="Scott Willeke"
 			AssemblyVersion="$(TheVersion)"
 			AssemblyFileVersion="$(TheVersion)"
 			AssemblyCopyright="$(AssemblyCopyright)"  
 		>
-    </AssemblyInfo>
+		</AssemblyInfo>
 
 	</Target>
 
@@ -89,12 +91,12 @@
 		<RemoveDir Directories="$(TheDeployDir)" />
 	</Target>
 
-  <Target Name="EnsureDependencies" DependsOnTargets="Init">
-    <!-- Only download a new copy of nuget.exe if we don't have a copy available -->
-    <WebDownload Condition="!Exists('$(NugetPath)')" Filename="$(NugetPath)" FileUri="https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" />
+	<Target Name="EnsureDependencies" DependsOnTargets="Init">
+		<!-- Only download a new copy of nuget.exe if we don't have a copy available -->
+		<WebDownload Condition="!Exists('$(NugetPath)')" Filename="$(NugetPath)" FileUri="https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" />
 
-    <Exec Command='$(NugetPath) restore -Verbosity Detailed -NonInteractive -OutputDirectory $(RootDir)\packages\ -Source "https://api.nuget.org/v3/index.json" $(RootDir)\LessIO.sln'></Exec>
-  </Target>
+		<Exec Command='$(NugetPath) restore -Verbosity Detailed -NonInteractive -OutputDirectory $(RootDir)\packages\ -Source "https://api.nuget.org/v3/index.json" $(RootDir)\LessIO.sln'></Exec>
+	</Target>
 
 	<Target Name="Build" DependsOnTargets="Validate;EnsureDependencies;SetProjectVersion">
 		<Message Text="Building version: $(TheVersion)" />
@@ -103,7 +105,7 @@
 
 		<MSBuild 
 			Projects="%(TheProjects.FullPath)" 
-			Properties="Configuration=Release;Platform=AnyCPU;ApplicationVersion=$(TheVersion);SolutionDir=$(RootDir)" 
+			Properties="Configuration=$(Configuration);Platform=AnyCPU;ApplicationVersion=$(TheVersion);SolutionDir=$(RootDir)" 
 			Targets="Rebuild"
 		/>
 	</Target>
@@ -112,16 +114,30 @@
 		<MakeDir Directories="$(TheDeployDir)" />
 
 		<Copy
-            SourceFiles="%(DeployFiles.FullPath)"
-            DestinationFolder="$(TheDeployDir)"
-        />
+			SourceFiles="%(DeployFiles.FullPath)"
+			DestinationFolder="$(TheDeployDir)"
+		/>
+
+		<!-- Prepares for running tests in $(TheDeployDir) -->
+		<ItemGroup>
+			<TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\LessIO.Tests.dll" />
+			<TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.execution.desktop.dll" />
+			<TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.abstractions.dll" />
+			<TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.core.dll" />
+			<TestBinaries Include="$(RootDir)\LessIO.Tests\Bin\$(Configuration)\xunit.assert.dll" />
+		</ItemGroup>
+		
+		<Copy
+			SourceFiles="%(TestBinaries.FullPath)"
+			DestinationFolder="$(TheDeployDir)"
+		/>
 	</Target>
 
 	<Target Name="Zip" DependsOnTargets="Deploy">
-    <!-- see https://github.com/loresoft/msbuildtasks/blob/master/Source/MSBuild.Community.Tasks/Zip.cs -->
-    <Zip
+		<!-- see https://github.com/loresoft/msbuildtasks/blob/master/Source/MSBuild.Community.Tasks/Zip.cs -->
+		<Zip
 			Files="@(DeployFiles)"
-      Flatten="True"
+			Flatten="True"
 			ZipFileName="$(TheDeployDir)\$(TheZipFileName)"
 		/>
 	</Target>
@@ -130,26 +146,26 @@
 		<!-- 
 			See http://docs.nuget.org/Create/Creating-and-Publishing-a-Package
 		 -->
-    <PropertyGroup>
-      <PackageDir>$(TheDeployDir)\nuget-package</PackageDir>
-    </PropertyGroup>
+		<PropertyGroup>
+			<PackageDir>$(TheDeployDir)\nuget-package</PackageDir>
+		</PropertyGroup>
 
-    <Copy
+		<Copy
 			SourceFiles="lessio.nuspec"
 			DestinationFolder="$(PackageDir)"
 		/>
-    <XmlPoke
+		<XmlPoke
 			XmlInputPath="$(PackageDir)\lessio.nuspec"
 			Query="//package/metadata/version"
 			Value="$(TheVersion)"
 		/>
-    <XmlPoke
-          XmlInputPath="$(PackageDir)\lessio.nuspec"
-          Query="//package/metadata/description"
-          Value="$(Description)"
+		<XmlPoke
+					XmlInputPath="$(PackageDir)\lessio.nuspec"
+					Query="//package/metadata/description"
+					Value="$(Description)"
 		/>
-    
-    <Exec
+		
+		<Exec
 			Command="nuget pack &quot;$(PackageDir)\lessio.nuspec&quot; -NoDefaultExcludes -Verbosity Normal" 
 			WorkingDirectory="$(PackageDir)"
 			ContinueOnError="true"

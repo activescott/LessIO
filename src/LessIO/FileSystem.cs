@@ -114,6 +114,8 @@ namespace LessIO
         /// </summary>
         public static void Copy(Path source, Path dest)
         {
+            if (!Strategy.Exists(source))
+                throw new Exception(string.Format("The file \"{0}\" does not exist.", source));
             Strategy.Copy(source, dest);
         }
 

@@ -20,10 +20,16 @@ namespace LessIO.Tests
         /// <param name="testPath">A relative name of the test dir.</param>
         protected Path GetTestPath(string testPath)
         {
-            // NOTE: We don't copy the TestFiles into a safe directory because almost nothing on windows can deal with the long-path directory's extreme length.
-            var bin = SysPath.GetDirectoryName(AppPath);
-            var project = SysPath.GetDirectoryName(bin);
-            var testFiles = SysPath.Combine(project, "TestFiles");
+            // First see if the process has a test filedir in environment.
+            string testFiles = Environment.GetEnvironmentVariable("LESSIO_TEST_FILES");
+            if (string.IsNullOrEmpty(testFiles))
+            {
+                // Guess:
+                // NOTE: We don't copy the TestFiles into a safe directory because almost nothing on windows can deal with the long-path directory's extreme length.
+                var bin = SysPath.GetDirectoryName(AppPath);
+                var project = SysPath.GetDirectoryName(bin);
+                testFiles = SysPath.Combine(project, "TestFiles");
+            }
             return new Path(SysPath.Combine(testFiles, testPath));
         }
     }
