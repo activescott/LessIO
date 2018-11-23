@@ -22,6 +22,11 @@ test:
  assemblies:
   - .\src\.deploy\LessIO.Tests.dll
 
+artifacts:
+- path: '.deploy\nuget-package\*.nupkg'
+- path: '.deploy\nuget-package\*.zip'
+- path: '.deploy\LessIO.dll'
+
 ##### KEEP RDP ACCESS #####
 # https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
 #on_finish:
