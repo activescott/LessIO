@@ -8,6 +8,8 @@ build_script:
 #---------------------------------#
 #       tests configuration       #
 #---------------------------------#
+environment:
+  LESSIO_TEST_FILES: '%APPVEYOR_BUILD_FOLDER%\src\LessIO.Tests\TestFiles\'
 
 test:
  assemblies:
