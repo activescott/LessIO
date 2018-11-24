@@ -19,13 +19,36 @@ environment:
   LESSIO_TEST_FILES: '%APPVEYOR_BUILD_FOLDER%\src\LessIO.Tests\TestFiles\'
 
 test:
- assemblies:
-  - .\src\.deploy\LessIO.Tests.dll
+  assemblies:
+    - .\src\.deploy\LessIO.Tests.dll
 
 artifacts:
 - path: 'src\.deploy\nuget-package\*.nupkg'
 - path: 'src\.deploy\*.zip'
 - path: 'src\.deploy\LessIO.dll'
+
+deploy:
+  # See https://www.appveyor.com/docs/deployment/github/
+  - provider: GitHub
+    release: v$(APPVEYOR_BUILD_VERSION)
+    description: 'Appveyor deployed v$(APPVEYOR_BUILD_VERSION)'
+    auth_token:
+      secure: JnGpNSHH2imq7iLdYS32onLbbSY0TP6eX+Z7m5bIeUUUHuT8zuf14DCJlDUoLqcK # encrypted token from https://github.com/settings/tokens
+    artifact: /(.*\.nupkg)|(.*\.zip)/ # upload NuGet & zip files to release assets
+    draft: false
+    prerelease: false
+     # publish every commit to master as a Github release
+    on:
+      branch: master
+      appveyor_repo_tag: false
+  # See https://www.appveyor.com/docs/deployment/nuget/
+  - provider: NuGet
+    api_key:
+      secure: O3hY7f0bJTcsEiy30iW23uZsjhGf+fQlum8vcHXQHqwA2kNvZ0vz0c34pqcOWOwB
+    artifact: /.*\.nupkg/
+    on:
+      branch: master # release from master branch only
+      appveyor_repo_tag: false # don't require tags to push packge - only master
 
 ##### KEEP RDP ACCESS #####
 # https://www.appveyor.com/docs/how-to/rdp-to-build-worker/
