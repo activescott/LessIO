@@ -166,7 +166,7 @@
 		/>
 		
 		<Exec
-			Command="nuget pack &quot;$(PackageDir)\lessio.nuspec&quot; -NoDefaultExcludes -Verbosity Normal" 
+			Command="$(NugetPath) pack &quot;$(PackageDir)\lessio.nuspec&quot; -NoDefaultExcludes -Verbosity Normal" 
 			WorkingDirectory="$(PackageDir)"
 			ContinueOnError="true"
 		>
