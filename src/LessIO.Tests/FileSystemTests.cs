@@ -195,12 +195,12 @@ namespace LessIO.Tests
             Debug.Assert(started);
             subst.WaitForExit();
             Debug.Print("Subst output:");
-            //because -1 means' already substed??
-            if (0 != subst.ExitCode)
+            // because 1 means' already substed
+            if (0 != subst.ExitCode && 1 != subst.ExitCode)
             {
                 var stderr = subst.StandardError.ReadToEnd();
                 var stdout = subst.StandardOutput.ReadToEnd();
-                throw new System.Exception("subst failed:" + stdout + "\r\n" + stderr);
+                throw new System.Exception(String.Format("subst failed with exit code {0}: {1} \r\n {2}", subst.ExitCode, stdout, stderr));
             }
         }
 
@@ -218,6 +218,31 @@ namespace LessIO.Tests
                 string.Format("The file \"{0}\" does not exist.", src), 
                 ex.Message
             );
+        }
+
+        [Fact]
+        public void ExistsShouldRecognizeRoot()
+        {
+            var testPaths = new string[] { @"C:\", @"c:\" }.Select(s => new Path(s));
+
+            foreach (var path in testPaths)
+            {
+                Assert.True(path.Exists, path.FullPathString);
+            }
+        }
+
+        [Fact]
+        public void ExistsShouldRecognizeExistingDirs()
+        {
+            var workingDir = Process.GetCurrentProcess().MainModule.FileName;
+            Assert.True(new Path(workingDir).Exists);
+        }
+
+        [Fact]
+        public void ExistsShouldRecognizeNonExistingFiles()
+        {
+            var testPath = new Path(String.Format(@"c:\file-does-not-exist-{0}.txt", DateTime.Now.ToString("yyyyMMddHHmmssffff")));
+            Assert.False(testPath.Exists);
         }
     }
 }
