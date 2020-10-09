@@ -114,18 +114,8 @@ namespace LessIO.Strategies.Win32
 
         public override bool Exists(Path path)
         {
-            NativeMethods.WIN32_FIND_DATA findData;
-            IntPtr findHandle = NativeMethods.FindFirstFile(path.WithWin32LongPathPrefix(), out findData);
-            try
-            {
-                bool exists = findHandle != NativeMethods.INVALID_HANDLE_VALUE;
-                return exists;
-            }
-            finally
-            {
-                if (findHandle != NativeMethods.INVALID_HANDLE_VALUE)
-                    NativeMethods.FindClose(findHandle);
-            }
+            var result = NativeMethods.GetFileAttributes(path.WithWin32LongPathPrefix());
+            return (result != NativeMethods.INVALID_FILE_ATTRIBUTES);
         }
 
         public override void RemoveDirectory(Path path, bool recursively)
@@ -203,7 +193,7 @@ namespace LessIO.Strategies.Win32
         public override IEnumerable<Path> ListContents(Path directory)
         {
             //NOTE: An important part of our contract is that if directory is not a directory, we return an empty set:
-            if (!IsDirectory(directory))
+            if (!Exists(directory) || !IsDirectory(directory))
                 yield break;
 
             // normalize dirName so we can assume it doesn't have a slash on the end:

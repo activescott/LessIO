@@ -162,7 +162,7 @@ namespace LessIO.Strategies.Win32
 
         // Invalid is from C:\Program Files (x86)\Windows Kits\8.1\Include\um\fileapi.h
         //#define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
-        internal static readonly int INVALID_FILE_ATTRIBUTES = -1;
+        internal static readonly uint INVALID_FILE_ATTRIBUTES = 0xffffffff;
 
 
         [DllImport("kernel32.dll", EntryPoint = "RemoveDirectory", CharSet = CharSet.Auto, SetLastError = true, BestFitMapping = false)]
