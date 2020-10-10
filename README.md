@@ -53,3 +53,14 @@ Contributing
 We accept pull requests! I think this is a sound basis, but obviously there are many improvements that could be made such as [improving platform independence by adding a new FileSystemStrategy](#platform-independence) or adding more static methods to [Path](https://github.com/activescott/LessIO/blob/master/src/LessIO/Path.cs) from System.IO.FileInfo/DirectoryInfo to make it easier to port System.IO code over to this library. There might also be some important methods missing on [FileSystem](https://github.com/activescott/LessIO/blob/master/src/LessIO/FileSystem.cs) as I just added the operations that [LessMSI](https://github.com/activescott/LessMSI) already uses which I imagine is fairly extensive but maybe not comprehensive.
 
 Please do make sure that existing tests pass and please add new ones for the new features you write.
+
+
+Deploying
+========
+Deployment to NuGet and Github Releases is automated. To deploy a new release take the following steps:
+
+1. Make sure all changes are merged to master
+2. Checkout the commit from the master branch. Then tag the commit with the tag `publish` by running the following command: `git tag -f publish`
+3. Push the tag with `git push --tags -f`
+
+The build script will then detect the tag, build it and publish it to GitHub Releases and Nuget.
