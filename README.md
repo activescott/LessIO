@@ -57,7 +57,7 @@ Please do make sure that existing tests pass and please add new ones for the new
 
 Deploying
 ========
-Deployment to NuGet and Github Releases is automated. To deploy a new release take the following steps:
+Deployment to NuGet and GitHub Releases is automated. To deploy a new release take the following steps:
 
 1. Make sure all changes are merged to master
 2. Checkout the commit from the master branch. Then tag the commit with the tag `publish` by running the following command: `git tag -f publish`
