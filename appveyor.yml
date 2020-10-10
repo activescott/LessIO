@@ -43,7 +43,7 @@ deploy:
   
   - provider: NuGet # See https://www.appveyor.com/docs/deployment/nuget/
     api_key:
-      secure: O3hY7f0bJTcsEiy30iW23uZsjhGf+fQlum8vcHXQHqwA2kNvZ0vz0c34pqcOWOwB
+      secure: 7Zk/r6cTA8/XNV+HO4BeAgh6iZqIxP6od34QACD9BzYVVWf/VqO1jFibOw4dds0R
     artifact: /.*\.nupkg/
     on:
       branch: master                  # only deploy on master
