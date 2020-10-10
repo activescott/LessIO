@@ -32,7 +32,7 @@ deploy:
     release: v$(APPVEYOR_BUILD_VERSION)
     description: 'Appveyor deployed v$(APPVEYOR_BUILD_VERSION)'
     auth_token:
-      secure: JnGpNSHH2imq7iLdYS32onLbbSY0TP6eX+Z7m5bIeUUUHuT8zuf14DCJlDUoLqcK # encrypted token from https://github.com/settings/tokens
+      secure: sHTJe3t1e84O4MP01W+PBfNt+9hQSAeH8y9KzceW471wltJZBEH3p+suOo1yQecv # encrypted token from https://github.com/settings/tokens
     artifact: /(.*\.nupkg)|(.*\.zip)/ # upload NuGet & zip files to release assets
     draft: false
     prerelease: false
