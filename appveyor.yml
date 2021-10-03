@@ -43,7 +43,8 @@ deploy:
   
   - provider: NuGet # See https://www.appveyor.com/docs/deployment/nuget/
     api_key:
-      secure: 7Zk/r6cTA8/XNV+HO4BeAgh6iZqIxP6od34QACD9BzYVVWf/VqO1jFibOw4dds0R
+      # Expires 10/03/2022. Get it at https://www.nuget.org/account/apikeys and encrypt it at https://ci.appveyor.com/tools/encrypt
+      secure: nLwjXk7MTIUXEQWgOvFK4ovwmEafl2PwDFTki5xqQlzF5GzpCXQfe4F8CDj2/WeE
     artifact: /.*\.nupkg/
     on:
       branch: master                  # only deploy on master
